@@ -56,7 +56,7 @@ export default function PatientMessages() {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + 16 }]}>
+    <View style={styles.container}>
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -65,9 +65,14 @@ export default function PatientMessages() {
       ) : (
         <ScrollView
           style={styles.scrollView}
+          keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          contentContainerStyle={{
+            paddingTop: insets.top + 16,
+            paddingBottom: insets.bottom + 32,
+          }}
         >
           <Title style={styles.title}>Messages</Title>
 
@@ -95,8 +100,7 @@ export default function PatientMessages() {
                         label={conversation.user.fullName
                           .split(' ')
                           .map(n => n[0])
-                          .join('')
-                        }
+                          .join('')}
                       />
                       <View style={styles.userTextContainer}>
                         <Title>{conversation.user.fullName}</Title>
@@ -135,7 +139,7 @@ export default function PatientMessages() {
 
       <Button
         mode="contained"
-        style={styles.newMessageButton}
+        style={[styles.newMessageButton, { marginBottom: insets.bottom + 8 }]}
         icon="plus"
         onPress={() => router.push('/(patient)/new-message')}
       >
@@ -150,7 +154,7 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 10 },
   scrollView: { flex: 1 },
-  title: { fontSize: 22, fontWeight: 'bold', margin: 16 },
+  title: { fontSize: 22, fontWeight: 'bold', marginHorizontal: 16, marginBottom: 12 },
   card: { marginHorizontal: 16, marginBottom: 12, elevation: 2 },
   emptyCard: { marginHorizontal: 16, marginBottom: 16, padding: 10, alignItems: 'center' },
   emptyText: { fontSize: 16, textAlign: 'center', marginBottom: 8 },
@@ -168,5 +172,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   unreadText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
-  newMessageButton: { margin: 16 },
+  newMessageButton: { marginHorizontal: 16 },
 });
