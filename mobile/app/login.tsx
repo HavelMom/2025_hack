@@ -5,14 +5,16 @@ import { router } from 'expo-router';
 import axios from 'axios';
 import { API_URL } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import * as SecureStore from 'expo-secure-store';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
-
   const { setUser, setIsAuthenticated } = useAuth();
+  const insets = useSafeAreaInsets(); // ✅
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -23,14 +25,9 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      const response = await axios.post(`${API_URL}/auth/login`, {
-        email,
-        password
-      });
-
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
       const { token, user } = response.data;
 
-      // Store and redirect handled in AuthContext
       await SecureStore.setItemAsync('token', token);
       await SecureStore.setItemAsync('user', JSON.stringify(user));
 
@@ -40,10 +37,7 @@ export default function LoginScreen() {
       router.replace(user.role === 'provider' ? '/(provider)/' : '/(patient)/');
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert(
-        'Login Failed',
-        error.response?.data?.message || 'An error occurred while logging in'
-      );
+      Alert.alert('Login Failed', error.response?.data?.message || 'An error occurred while logging in');
     } finally {
       setLoading(false);
     }
@@ -66,8 +60,15 @@ export default function LoginScreen() {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
+      keyboardVerticalOffset={80}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 32 },
+        ]}
+      >
         <View style={styles.headerContainer}>
           <Title style={styles.title}>Welcome Back</Title>
           <Text style={styles.subtitle}>Log in to continue</Text>
@@ -105,15 +106,9 @@ export default function LoginScreen() {
 
           <View style={styles.linkContainer}>
             <Text>Don't have an account? </Text>
-            <Text
-              style={styles.link}
-              onPress={() => router.push('/register')}
-            >
-              Register
-            </Text>
+            <Text style={styles.link} onPress={() => router.push('/register')}>Register</Text>
           </View>
 
-          {/* Demo Section */}
           <Title style={styles.demoTitle}>Or try a demo:</Title>
 
           <Button
@@ -139,7 +134,7 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  scrollContent: { flexGrow: 1, padding: 20 },
+  scrollContent: { flexGrow: 1, paddingHorizontal: 20 },
   headerContainer: { alignItems: 'center', marginBottom: 30 },
   title: { fontSize: 28, fontWeight: 'bold' },
   subtitle: { fontSize: 16, color: '#666', marginTop: 5 },
