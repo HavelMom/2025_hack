@@ -24,7 +24,7 @@ export default function PatientMedicalRecords() {
       setMedicalRecords(response.data);
     } catch (error) {
       console.error('Error fetching medical records:', error);
-      Alert.alert('Error', 'Failed to load medical records');
+      //Alert.alert('Error', 'Failed to load medical records');
     } finally {
       setLoading(false);
       setRefreshing(false);

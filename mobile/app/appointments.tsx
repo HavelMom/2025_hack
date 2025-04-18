@@ -24,7 +24,7 @@ export default function PatientAppointments() {
       setAppointments(response.data);
     } catch (error) {
       console.error('Error fetching appointments:', error);
-      Alert.alert('Error', 'Failed to load appointments');
+      //Alert.alert('Error', 'Failed to load appointments');
     } finally {
       setLoading(false);
       setRefreshing(false);

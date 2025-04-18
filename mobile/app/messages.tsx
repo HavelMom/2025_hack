@@ -24,7 +24,7 @@ export default function PatientMessages() {
       setConversations(response.data);
     } catch (error) {
       console.error('Error fetching conversations:', error);
-      Alert.alert('Error', 'Failed to load conversations');
+      //Alert.alert('Error', 'Failed to load conversations');
     } finally {
       setLoading(false);
       setRefreshing(false);

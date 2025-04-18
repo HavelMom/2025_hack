@@ -24,7 +24,7 @@ export default function PatientPrescriptions() {
       setPrescriptions(response.data);
     } catch (error) {
       console.error('Error fetching prescriptions:', error);
-      Alert.alert('Error', 'Failed to load prescriptions');
+      //Alert.alert('Error', 'Failed to load prescriptions');
     } finally {
       setLoading(false);
       setRefreshing(false);
