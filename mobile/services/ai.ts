@@ -5,8 +5,8 @@ import { API_URL } from '../utils/api';
 
 export async function diagnoseWithModel(prompt: string): Promise<string[]> {
   const { data } = await axios.post(
-    ${API_URL}/api/ai/diagnose,
-    { prompt }
+    `${API_URL}/api/ai/diagnose`,
+    { prompt: prompt }
   );
   return data.diseases;
 }
