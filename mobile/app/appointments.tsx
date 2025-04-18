@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { Text, Card, Button, Title, FAB, ActivityIndicator, Chip, useTheme } from 'react-native-paper';
+import { Text, Card, Button, Title, ActivityIndicator, Chip, useTheme } from 'react-native-paper';
 import { router } from 'expo-router';
 import axios from 'axios';
 import { API_URL } from '../utils/api';
@@ -127,13 +127,6 @@ export default function PatientAppointments() {
             )}
           </ScrollView>
 
-          <FAB
-            style={styles.fab}
-            icon="plus"
-            onPress={() => router.push('/(patient)/schedule-appointment')}
-            label="New Appointment"
-          />
-
           <View style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}>
             <Button
               mode="outlined"
@@ -166,7 +159,4 @@ const styles = StyleSheet.create({
   dateText: { fontSize: 16, marginBottom: 8 },
   providerText: { fontSize: 16, marginBottom: 8 },
   reasonText: { fontSize: 14, color: '#666' },
-  fab: {
-    position: 'absolute', margin: 16, right: 0, bottom: 80,
-  },
 });

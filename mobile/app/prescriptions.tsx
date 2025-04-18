@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Card, Button, Title, ActivityIndicator, useTheme, Chip } from 'react-native-paper';
 import { router } from 'expo-router';
 import axios from 'axios';
@@ -74,99 +74,103 @@ export default function PatientPrescriptions() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.loadingText}>Loading prescriptions...</Text>
         </View>
       ) : (
-        <ScrollView
-          style={styles.scrollView}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          contentContainerStyle={{
-            paddingTop: insets.top + 16,
-            paddingBottom: insets.bottom + 32,
-          }}
-        >
-          <Title style={styles.title}>My Prescriptions</Title>
-
-          {prescriptions.length === 0 ? (
-            <Card style={styles.emptyCard}>
-              <Card.Content>
-                <Text style={styles.emptyText}>No prescriptions found</Text>
-              </Card.Content>
-            </Card>
-          ) : (
-            prescriptions.map((prescription) => (
-              <Card key={prescription._id} style={styles.card}>
-                <Card.Content>
-                  <View style={styles.headerContainer}>
-                    <Title>{prescription.medicationName}</Title>
-                    <Chip
-                      mode="outlined"
-                      style={{ backgroundColor: getStatusColor(prescription.status) }}
-                      textStyle={{ color: '#fff' }}
-                    >
-                      {prescription.status}
-                    </Chip>
-                  </View>
-
-                  <Text style={styles.dosageText}>
-                    {prescription.dosage}, {prescription.frequency}
-                  </Text>
-
-                  <Text style={styles.dateText}>
-                    Start: {formatDate(prescription.startDate)}
-                  </Text>
-
-                  <Text style={styles.dateText}>
-                    End: {formatDate(prescription.endDate)}
-                  </Text>
-
-                  <Text style={styles.providerText}>
-                    Prescribed by: Dr. {prescription.providerId?.userId?.fullName || 'Unknown'}
-                  </Text>
-
-                  {prescription.refills > 0 && (
-                    <Text style={styles.refillsText}>
-                      Refills remaining: {prescription.refills}
-                    </Text>
-                  )}
-
-                  {prescription.notes && (
-                    <Text style={styles.notesText}>
-                      Notes: {prescription.notes}
-                    </Text>
-                  )}
-                </Card.Content>
-                <Card.Actions>
-                  {prescription.status === 'ACTIVE' && prescription.refills > 0 && (
-                    <Button
-                      mode="contained"
-                      onPress={() => requestRefill(prescription._id)}
-                    >
-                      Request Refill
-                    </Button>
-                  )}
-                </Card.Actions>
-              </Card>
-            ))
-          )}
-
-          <Button
-            mode="outlined"
-            onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
-            style={{ margin: 16 }}
+        <>
+          <ScrollView
+            style={styles.scrollView}
+            keyboardShouldPersistTaps="handled"
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            contentContainerStyle={{
+              paddingTop: insets.top + 16,
+              paddingBottom: 120,
+            }}
           >
-            Back to Home
-          </Button>
-        </ScrollView>
+            <Title style={styles.title}>My Prescriptions</Title>
+
+            {prescriptions.length === 0 ? (
+              <Card style={styles.emptyCard}>
+                <Card.Content>
+                  <Text style={styles.emptyText}>No prescriptions found</Text>
+                </Card.Content>
+              </Card>
+            ) : (
+              prescriptions.map((prescription) => (
+                <Card key={prescription._id} style={styles.card}>
+                  <Card.Content>
+                    <View style={styles.headerContainer}>
+                      <Title>{prescription.medicationName}</Title>
+                      <Chip
+                        mode="outlined"
+                        style={{ backgroundColor: getStatusColor(prescription.status) }}
+                        textStyle={{ color: '#fff' }}
+                      >
+                        {prescription.status}
+                      </Chip>
+                    </View>
+
+                    <Text style={styles.dosageText}>
+                      {prescription.dosage}, {prescription.frequency}
+                    </Text>
+
+                    <Text style={styles.dateText}>
+                      Start: {formatDate(prescription.startDate)}
+                    </Text>
+
+                    <Text style={styles.dateText}>
+                      End: {formatDate(prescription.endDate)}
+                    </Text>
+
+                    <Text style={styles.providerText}>
+                      Prescribed by: Dr. {prescription.providerId?.userId?.fullName || 'Unknown'}
+                    </Text>
+
+                    {prescription.refills > 0 && (
+                      <Text style={styles.refillsText}>
+                        Refills remaining: {prescription.refills}
+                      </Text>
+                    )}
+
+                    {prescription.notes && (
+                      <Text style={styles.notesText}>
+                        Notes: {prescription.notes}
+                      </Text>
+                    )}
+                  </Card.Content>
+                  <Card.Actions>
+                    {prescription.status === 'ACTIVE' && prescription.refills > 0 && (
+                      <Button
+                        mode="contained"
+                        onPress={() => requestRefill(prescription._id)}
+                      >
+                        Request Refill
+                      </Button>
+                    )}
+                  </Card.Actions>
+                </Card>
+              ))
+            )}
+          </ScrollView>
+
+          <View style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}>
+            <Button
+              mode="outlined"
+              onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+            >
+              Back to Home
+            </Button>
+          </View>
+        </>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

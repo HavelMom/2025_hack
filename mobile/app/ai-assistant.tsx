@@ -55,10 +55,7 @@ export default function AIAssistant() {
           'Would you like to schedule an appointment now?',
           [
             { text: 'Not now', style: 'cancel' },
-            {
-              text: 'Yes',
-              onPress: () => router.push('/(patient)/schedule-appointment')
-            }
+            { text: 'Yes', onPress: () => router.push('/(patient)/schedule-appointment') }
           ]
         );
       }
@@ -69,10 +66,7 @@ export default function AIAssistant() {
           'Would you like to message your healthcare provider?',
           [
             { text: 'Not now', style: 'cancel' },
-            {
-              text: 'Yes',
-              onPress: () => router.push('/(patient)/messages')
-            }
+            { text: 'Yes', onPress: () => router.push('/(patient)/messages') }
           ]
         );
       }
@@ -122,12 +116,7 @@ export default function AIAssistant() {
         ref={scrollViewRef}
         keyboardShouldPersistTaps="handled"
         style={styles.conversationContainer}
-        contentContainerStyle={[
-          styles.conversationContent,
-          {
-            paddingBottom: insets.bottom + 32,
-          }
-        ]}
+        contentContainerStyle={[styles.conversationContent, { paddingBottom: 24 }]}
       >
         {conversation.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -181,38 +170,40 @@ export default function AIAssistant() {
             <Text style={styles.processingText}>Processing...</Text>
           </View>
         )}
+      </ScrollView>
+
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            mode="outlined"
+            value={input}
+            onChangeText={setInput}
+            placeholder="Type your message..."
+            style={styles.textInput}
+            disabled={processing}
+            right={
+              <TextInput.Icon
+                icon="microphone"
+                onPress={() => Alert.alert('Voice Input', 'Voice input would be activated here')}
+              />
+            }
+          />
+          <IconButton
+            icon="send"
+            size={24}
+            disabled={processing || !input.trim()}
+            onPress={() => processVoiceInput(input)}
+            style={styles.sendButton}
+          />
+        </View>
 
         <Button
           mode="outlined"
           onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
-          style={{ marginTop: 24, alignSelf: 'center' }}
+          style={styles.backButton}
         >
           Back to Home
         </Button>
-      </ScrollView>
-
-      <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>
-        <TextInput
-          mode="outlined"
-          value={input}
-          onChangeText={setInput}
-          placeholder="Type your message..."
-          style={styles.textInput}
-          disabled={processing}
-          right={
-            <TextInput.Icon
-              icon="microphone"
-              onPress={() => Alert.alert('Voice Input', 'Voice input would be activated here')}
-            />
-          }
-        />
-        <IconButton
-          icon="send"
-          size={24}
-          disabled={processing || !input.trim()}
-          onPress={() => processVoiceInput(input)}
-          style={styles.sendButton}
-        />
       </View>
     </KeyboardAvoidingView>
   );
@@ -254,14 +245,14 @@ const styles = StyleSheet.create({
   },
   processingContainer: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 12 },
   processingText: { fontSize: 14, color: '#666', marginLeft: 8 },
+  footer: { paddingHorizontal: 8, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e0e0e0' },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    flexDirection: 'row', alignItems: 'center', marginTop: 8,
   },
   textInput: { flex: 1, backgroundColor: '#fff' },
   sendButton: { marginLeft: 8 },
+  backButton: {
+    marginTop: 8,
+    alignSelf: 'center',
+  },
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Card, Button, Title, ActivityIndicator, useTheme, List } from 'react-native-paper';
 import { router } from 'expo-router';
 import axios from 'axios';
@@ -50,95 +50,101 @@ export default function PatientMedicalRecords() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.loadingText}>Loading medical records...</Text>
         </View>
       ) : (
-        <ScrollView
-          style={styles.scrollView}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{
-            paddingTop: insets.top + 16,
-            paddingBottom: insets.bottom + 32,
-          }}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          <Title style={styles.title}>My Medical Records</Title>
+        <>
+          <ScrollView
+            style={styles.scrollView}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              paddingTop: insets.top + 16,
+              paddingBottom: 120,
+            }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <Title style={styles.title}>My Medical Records</Title>
 
-          {medicalRecords.length === 0 ? (
-            <Card style={styles.emptyCard}>
-              <Card.Content>
-                <Text style={styles.emptyText}>No medical records found</Text>
-              </Card.Content>
-            </Card>
-          ) : (
-            medicalRecords.map((record) => (
-              <Card key={record._id} style={styles.card}>
+            {medicalRecords.length === 0 ? (
+              <Card style={styles.emptyCard}>
                 <Card.Content>
-                  <Title>{record.diagnosis}</Title>
-                  <Text style={styles.dateText}>
-                    Date: {formatDate(record.recordDate)}
-                  </Text>
-                  <Text style={styles.providerText}>
-                    Provider: Dr. {record.providerId?.userId?.fullName || 'Unknown'}
-                  </Text>
+                  <Text style={styles.emptyText}>No medical records found</Text>
+                </Card.Content>
+              </Card>
+            ) : (
+              medicalRecords.map((record) => (
+                <Card key={record._id} style={styles.card}>
+                  <Card.Content>
+                    <Title>{record.diagnosis}</Title>
+                    <Text style={styles.dateText}>
+                      Date: {formatDate(record.recordDate)}
+                    </Text>
+                    <Text style={styles.providerText}>
+                      Provider: Dr. {record.providerId?.userId?.fullName || 'Unknown'}
+                    </Text>
 
-                  <List.Accordion
-                    title="Symptoms"
-                    left={props => <List.Icon {...props} icon="medical-bag" />}
-                  >
-                    <List.Item
-                      title={record.symptoms || 'No symptoms recorded'}
-                      titleNumberOfLines={10}
-                    />
-                  </List.Accordion>
-
-                  <List.Accordion
-                    title="Treatment"
-                    left={props => <List.Icon {...props} icon="pill" />}
-                  >
-                    <List.Item
-                      title={record.treatment || 'No treatment recorded'}
-                      titleNumberOfLines={10}
-                    />
-                  </List.Accordion>
-
-                  {record.notes && (
                     <List.Accordion
-                      title="Notes"
-                      left={props => <List.Icon {...props} icon="note-text" />}
+                      title="Symptoms"
+                      left={props => <List.Icon {...props} icon="medical-bag" />}
                     >
                       <List.Item
-                        title={record.notes}
+                        title={record.symptoms || 'No symptoms recorded'}
                         titleNumberOfLines={10}
                       />
                     </List.Accordion>
-                  )}
-                </Card.Content>
-                <Card.Actions>
-                  <Button onPress={() => router.push(`/(patient)/medical-record-details/${record._id}`)}>
-                    View Full Details
-                  </Button>
-                </Card.Actions>
-              </Card>
-            ))
-          )}
 
-          <Button
-            mode="outlined"
-            onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
-            style={{ margin: 16 }}
-          >
-            Back to Home
-          </Button>
-        </ScrollView>
+                    <List.Accordion
+                      title="Treatment"
+                      left={props => <List.Icon {...props} icon="pill" />}
+                    >
+                      <List.Item
+                        title={record.treatment || 'No treatment recorded'}
+                        titleNumberOfLines={10}
+                      />
+                    </List.Accordion>
+
+                    {record.notes && (
+                      <List.Accordion
+                        title="Notes"
+                        left={props => <List.Icon {...props} icon="note-text" />}
+                      >
+                        <List.Item
+                          title={record.notes}
+                          titleNumberOfLines={10}
+                        />
+                      </List.Accordion>
+                    )}
+                  </Card.Content>
+                  <Card.Actions>
+                    <Button onPress={() => router.push(`/(patient)/medical-record-details/${record._id}`)}>
+                      View Full Details
+                    </Button>
+                  </Card.Actions>
+                </Card>
+              ))
+            )}
+          </ScrollView>
+
+          <View style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}>
+            <Button
+              mode="outlined"
+              onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+            >
+              Back to Home
+            </Button>
+          </View>
+        </>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
