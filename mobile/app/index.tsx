@@ -17,7 +17,7 @@ export default function Index() {
       }
     } else if (!isLoading && !isAuthenticated) {
       // If not authenticated, redirect to login
-      router.replace('/auth/login');
+      router.replace('/login');
     }
   }, [isLoading, isAuthenticated, user]);
 

@@ -227,7 +227,7 @@ export default function RegisterScreen() {
             <Text>Already have an account? </Text>
             <Text
               style={styles.link}
-              onPress={() => router.push('/auth/login')}
+              onPress={() => router.push('/login')}
             >
               Login
             </Text>

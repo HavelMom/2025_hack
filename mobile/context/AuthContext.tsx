@@ -20,6 +20,8 @@ type AuthContextType = {
   register: (userData: any) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  setUser: (user: User | null) => void;
+  setIsAuthenticated: (auth: boolean) => void;
 };
 
 // Create context
@@ -41,8 +43,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
-          
-          // Set auth header for all future requests
           axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         }
       } catch (error) {
@@ -66,18 +66,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const { token: newToken, user: userData } = response.data;
 
-      // Store in secure storage
       await SecureStore.setItemAsync('token', newToken);
       await SecureStore.setItemAsync('user', JSON.stringify(userData));
 
-      // Update state
       setToken(newToken);
       setUser(userData);
-
-      // Set auth header for all future requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
 
-      // Redirect based on role
       if (userData.role === 'patient') {
         router.replace('/(patient)/');
       } else if (userData.role === 'provider') {
@@ -99,18 +94,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const { token: newToken, user: newUser } = response.data;
 
-      // Store in secure storage
       await SecureStore.setItemAsync('token', newToken);
       await SecureStore.setItemAsync('user', JSON.stringify(newUser));
 
-      // Update state
       setToken(newToken);
       setUser(newUser);
-
-      // Set auth header for all future requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
 
-      // Redirect based on role
       if (newUser.role === 'patient') {
         router.replace('/(patient)/');
       } else if (newUser.role === 'provider') {
@@ -127,32 +117,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Logout function
   const logout = async () => {
     try {
-      // Clear secure storage
       await SecureStore.deleteItemAsync('token');
       await SecureStore.deleteItemAsync('user');
-
-      // Clear state
       setToken(null);
       setUser(null);
-
-      // Remove auth header
       delete axios.defaults.headers.common['Authorization'];
-
-      // Redirect to login
-      router.replace('/auth/login');
+      router.replace('/login');
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
-  const value = {
+  const setIsAuthenticated = (auth: boolean) => {
+    if (!auth) {
+      setToken(null);
+      setUser(null);
+    }
+  };
+
+  const value: AuthContextType = {
     user,
     token,
     isLoading,
     login,
     register,
     logout,
-    isAuthenticated: !!token
+    isAuthenticated: !!token,
+    setUser,
+    setIsAuthenticated
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
