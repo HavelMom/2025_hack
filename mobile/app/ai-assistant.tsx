@@ -4,19 +4,21 @@ import {
   Text, Card, Button, Title, TextInput, ActivityIndicator, useTheme, IconButton
 } from 'react-native-paper';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { diagnoseWithModel } from './services/ai';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { API_URL } from '../utils/api';
-import { useAuth } from '../context/AuthContext';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AIAssistant() {
   const [input, setInput] = useState('');
   const [processing, setProcessing] = useState(false);
   const [conversation, setConversation] = useState([]);
+  const [diagnosis, setDiagnosis] = useState<string[] | null>(null);
   const { token, user } = useAuth();
   const theme = useTheme();
-  const scrollViewRef = useRef();
   const insets = useSafeAreaInsets();
+  const scrollViewRef = useRef();
 
   const processVoiceInput = async (text) => {
     if (!text.trim()) return;
@@ -49,31 +51,25 @@ export default function AIAssistant() {
 
       setConversation(prev => [...prev, aiResponse]);
 
+      // Run diagnosis model
+      const diagnoses = await diagnoseWithModel(text);
+      setDiagnosis(diagnoses);
+
       if (aiResponse.actions.scheduleAppointment) {
-        Alert.alert(
-          'Schedule Appointment',
-          'Would you like to schedule an appointment now?',
-          [
-            { text: 'Not now', style: 'cancel' },
-            { text: 'Yes', onPress: () => router.push('/(patient)/schedule-appointment') }
-          ]
-        );
+        Alert.alert('Schedule Appointment', 'Would you like to schedule an appointment now?', [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Yes', onPress: () => router.push('/(patient)/schedule-appointment') }
+        ]);
       }
 
       if (aiResponse.actions.connectToProvider) {
-        Alert.alert(
-          'Connect to Provider',
-          'Would you like to message your healthcare provider?',
-          [
-            { text: 'Not now', style: 'cancel' },
-            { text: 'Yes', onPress: () => router.push('/(patient)/messages') }
-          ]
-        );
+        Alert.alert('Connect to Provider', 'Would you like to message your healthcare provider?', [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Yes', onPress: () => router.push('/(patient)/messages') }
+        ]);
       }
-
     } catch (error) {
-      console.error('Error processing voice input:', error);
-      Alert.alert('Error', 'Failed to process your request');
+      console.error('Error processing input:', error);
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         text: "I'm sorry, I encountered an error processing your request. Please try again.",
@@ -83,7 +79,7 @@ export default function AIAssistant() {
       };
       setConversation(prev => [...prev, errorMessage]);
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
 
@@ -95,9 +91,8 @@ export default function AIAssistant() {
     }
   }, [conversation]);
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  const formatTime = (date) =>
+    new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
     <KeyboardAvoidingView
@@ -107,9 +102,7 @@ export default function AIAssistant() {
     >
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Title style={styles.title}>AI Health Assistant</Title>
-        <Text style={styles.subtitle}>
-          Describe your symptoms or ask for help with appointments
-        </Text>
+        <Text style={styles.subtitle}>Describe your symptoms or ask for help with appointments</Text>
       </View>
 
       <ScrollView
@@ -120,30 +113,16 @@ export default function AIAssistant() {
       >
         {conversation.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              Hello! I'm your AI health assistant. How can I help you today?
-            </Text>
+            <Text style={styles.emptyText}>Hello! I'm your AI health assistant. How can I help you today?</Text>
             <Text style={styles.suggestionText}>You can ask me about:</Text>
             <View style={styles.suggestionsContainer}>
-              <Button
-                mode="outlined"
-                style={styles.suggestionButton}
-                onPress={() => processVoiceInput("I have a headache and fever")}
-              >
+              <Button mode="outlined" style={styles.suggestionButton} onPress={() => processVoiceInput("I have a headache and fever")}>
                 Symptom analysis
               </Button>
-              <Button
-                mode="outlined"
-                style={styles.suggestionButton}
-                onPress={() => processVoiceInput("I need to schedule an appointment")}
-              >
+              <Button mode="outlined" style={styles.suggestionButton} onPress={() => processVoiceInput("I need to schedule an appointment")}>
                 Schedule appointment
               </Button>
-              <Button
-                mode="outlined"
-                style={styles.suggestionButton}
-                onPress={() => processVoiceInput("Connect me with my doctor")}
-              >
+              <Button mode="outlined" style={styles.suggestionButton} onPress={() => processVoiceInput("Connect me with my doctor")}>
                 Contact provider
               </Button>
             </View>
@@ -162,6 +141,15 @@ export default function AIAssistant() {
               <Text style={styles.timestampText}>{formatTime(message.timestamp)}</Text>
             </View>
           ))
+        )}
+
+        {diagnosis && (
+          <Card style={{ marginTop: 12 }}>
+            <Card.Content>
+              <Text style={{ fontWeight: 'bold' }}>Possible conditions:</Text>
+              <Text>{diagnosis.join(', ')}</Text>
+            </Card.Content>
+          </Card>
         )}
 
         {processing && (
@@ -246,13 +234,8 @@ const styles = StyleSheet.create({
   processingContainer: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 12 },
   processingText: { fontSize: 14, color: '#666', marginLeft: 8 },
   footer: { paddingHorizontal: 8, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e0e0e0' },
-  inputContainer: {
-    flexDirection: 'row', alignItems: 'center', marginTop: 8,
-  },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   textInput: { flex: 1, backgroundColor: '#fff' },
   sendButton: { marginLeft: 8 },
-  backButton: {
-    marginTop: 8,
-    alignSelf: 'center',
-  },
+  backButton: { marginTop: 8, alignSelf: 'center' },
 });
