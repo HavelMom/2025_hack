@@ -5,7 +5,7 @@ import {
 } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { diagnoseWithModel } from './services/ai';
+import { diagnoseWithModel } from '../services/ai';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { API_URL } from '../utils/api';
