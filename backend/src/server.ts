@@ -10,6 +10,8 @@ import medicalRecordRoutes from './routes/medical-record.routes';
 import prescriptionRoutes from './routes/prescription.routes';
 import messageRoutes from './routes/message.routes';
 import aiInteractionRoutes from './routes/ai-interaction.routes';
+import aiRoutes from './routes/ai.routes';
+
 
 // Load environment variables
 dotenv.config();
@@ -33,6 +35,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Routes
+app.use(express.json());
+app.use('/api/ai', aiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/providers', providerRoutes);

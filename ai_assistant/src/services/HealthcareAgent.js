@@ -1,4 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { API_URL } from '../../utils/api';
+
+export async function diagnoseWithModel(transcript) {
+  const { data } = await axios.post(`${API_URL}/api/ai/diagnose`, { prompt: transcript });
+  return data.diseases;  // an array of strings
+}
+
 
 /**
  * HealthcareAgent component handles the healthcare-specific logic
