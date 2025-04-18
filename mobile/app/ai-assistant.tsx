@@ -108,7 +108,7 @@ export default function AIAssistant() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={[styles.container, { paddingBottom: insets.bottom + 8 }]}
+      style={styles.container}
       keyboardVerticalOffset={80}
     >
       <View style={styles.header}>
@@ -120,8 +120,15 @@ export default function AIAssistant() {
 
       <ScrollView
         ref={scrollViewRef}
+        keyboardShouldPersistTaps="handled"
         style={styles.conversationContainer}
-        contentContainerStyle={styles.conversationContent}
+        contentContainerStyle={[
+          styles.conversationContent,
+          {
+            paddingTop: insets.top + 16,
+            paddingBottom: insets.bottom + 16,
+          }
+        ]}
       >
         {conversation.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -220,7 +227,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: 'bold' },
   subtitle: { fontSize: 14, color: '#666', marginTop: 4 },
   conversationContainer: { flex: 1 },
-  conversationContent: { padding: 16, paddingBottom: 24 },
+  conversationContent: { paddingHorizontal: 16 },
   emptyContainer: { alignItems: 'center', justifyContent: 'center', padding: 20 },
   emptyText: { fontSize: 16, textAlign: 'center', marginBottom: 20 },
   suggestionText: { fontSize: 14, marginBottom: 10 },

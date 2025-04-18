@@ -66,7 +66,7 @@ export default function PatientAppointments() {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + 16 }]}>
+    <View style={styles.container}>
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -75,6 +75,11 @@ export default function PatientAppointments() {
       ) : (
         <ScrollView
           style={styles.scrollView}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            paddingTop: insets.top + 16,
+            paddingBottom: insets.bottom + 32,
+          }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <Title style={styles.title}>Upcoming Appointments</Title>
@@ -82,8 +87,8 @@ export default function PatientAppointments() {
             <Card style={styles.emptyCard}>
               <Card.Content>
                 <Text style={styles.emptyText}>No appointments scheduled</Text>
-                <Button 
-                  mode="contained" 
+                <Button
+                  mode="contained"
                   style={styles.scheduleButton}
                   onPress={() => router.push('/(patient)/schedule-appointment')}
                 >
@@ -97,8 +102,8 @@ export default function PatientAppointments() {
                 <Card.Content>
                   <View style={styles.appointmentHeader}>
                     <Title>{appointment.type} Appointment</Title>
-                    <Chip 
-                      mode="outlined" 
+                    <Chip
+                      mode="outlined"
                       style={{ backgroundColor: getStatusColor(appointment.status) }}
                       textStyle={{ color: '#fff' }}
                     >
@@ -116,6 +121,14 @@ export default function PatientAppointments() {
               </Card>
             ))
           )}
+
+          <Button
+            mode="outlined"
+            onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+            style={{ margin: 16 }}
+          >
+            Back to Home
+          </Button>
         </ScrollView>
       )}
 
@@ -125,14 +138,6 @@ export default function PatientAppointments() {
         onPress={() => router.push('/(patient)/schedule-appointment')}
         label="New Appointment"
       />
-
-      <Button
-        mode="outlined"
-        onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
-        style={{ margin: 16 }}
-      >
-        Back to Home
-      </Button>
     </View>
   );
 }

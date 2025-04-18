@@ -50,7 +50,7 @@ export default function PatientMedicalRecords() {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + 16 }]}>
+    <View style={styles.container}>
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -59,6 +59,11 @@ export default function PatientMedicalRecords() {
       ) : (
         <ScrollView
           style={styles.scrollView}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            paddingTop: insets.top + 16,
+            paddingBottom: insets.bottom + 32,
+          }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -87,7 +92,7 @@ export default function PatientMedicalRecords() {
                     title="Symptoms"
                     left={props => <List.Icon {...props} icon="medical-bag" />}
                   >
-                    <List.Item 
+                    <List.Item
                       title={record.symptoms || 'No symptoms recorded'}
                       titleNumberOfLines={10}
                     />
@@ -97,7 +102,7 @@ export default function PatientMedicalRecords() {
                     title="Treatment"
                     left={props => <List.Icon {...props} icon="pill" />}
                   >
-                    <List.Item 
+                    <List.Item
                       title={record.treatment || 'No treatment recorded'}
                       titleNumberOfLines={10}
                     />
@@ -108,7 +113,7 @@ export default function PatientMedicalRecords() {
                       title="Notes"
                       left={props => <List.Icon {...props} icon="note-text" />}
                     >
-                      <List.Item 
+                      <List.Item
                         title={record.notes}
                         titleNumberOfLines={10}
                       />

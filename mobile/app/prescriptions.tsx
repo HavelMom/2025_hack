@@ -74,7 +74,7 @@ export default function PatientPrescriptions() {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + 16 }]}>
+    <View style={styles.container}>
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -83,9 +83,14 @@ export default function PatientPrescriptions() {
       ) : (
         <ScrollView
           style={styles.scrollView}
+          keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          contentContainerStyle={{
+            paddingTop: insets.top + 16,
+            paddingBottom: insets.bottom + 32,
+          }}
         >
           <Title style={styles.title}>My Prescriptions</Title>
 
