@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../utils/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -23,6 +24,7 @@ export default function RegisterScreen() {
   const [licenseNumber, setLicenseNumber] = useState('');
   
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   const handleRegister = async () => {
     // Validation
@@ -100,7 +102,7 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { paddingBottom: insets.bottom + 16 }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.headerContainer}>

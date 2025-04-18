@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import axios from 'axios';
 import { API_URL } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AIAssistant() {
   const [input, setInput] = useState('');
@@ -15,6 +16,7 @@ export default function AIAssistant() {
   const { token, user } = useAuth();
   const theme = useTheme();
   const scrollViewRef = useRef();
+  const insets = useSafeAreaInsets();
 
   const processVoiceInput = async (text) => {
     if (!text.trim()) return;
@@ -106,7 +108,7 @@ export default function AIAssistant() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { paddingBottom: insets.bottom + 8 }]}
       keyboardVerticalOffset={80}
     >
       <View style={styles.header}>

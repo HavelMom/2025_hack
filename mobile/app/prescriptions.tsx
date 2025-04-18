@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import axios from 'axios';
 import { API_URL } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function PatientPrescriptions() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -12,6 +13,7 @@ export default function PatientPrescriptions() {
   const [refreshing, setRefreshing] = useState(false);
   const { token, user } = useAuth();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   const fetchPrescriptions = async () => {
     try {
@@ -72,7 +74,7 @@ export default function PatientPrescriptions() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom + 16 }]}>
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
