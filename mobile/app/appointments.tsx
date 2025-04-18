@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Card, Button, Title, FAB, ActivityIndicator, Chip, useTheme } from 'react-native-paper';
 import { router } from 'expo-router';
 import axios from 'axios';
@@ -66,79 +66,87 @@ export default function PatientAppointments() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.loadingText}>Loading appointments...</Text>
         </View>
       ) : (
-        <ScrollView
-          style={styles.scrollView}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{
-            paddingTop: insets.top + 16,
-            paddingBottom: insets.bottom + 32,
-          }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-          <Title style={styles.title}>Upcoming Appointments</Title>
-          {appointments.length === 0 ? (
-            <Card style={styles.emptyCard}>
-              <Card.Content>
-                <Text style={styles.emptyText}>No appointments scheduled</Text>
-                <Button
-                  mode="contained"
-                  style={styles.scheduleButton}
-                  onPress={() => router.push('/(patient)/schedule-appointment')}
-                >
-                  Schedule New Appointment
-                </Button>
-              </Card.Content>
-            </Card>
-          ) : (
-            appointments.map((appointment) => (
-              <Card key={appointment._id} style={styles.card}>
+        <>
+          <ScrollView
+            style={styles.scrollView}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              paddingTop: insets.top + 16,
+              paddingBottom: 120,
+            }}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+            <Title style={styles.title}>Upcoming Appointments</Title>
+            {appointments.length === 0 ? (
+              <Card style={styles.emptyCard}>
                 <Card.Content>
-                  <View style={styles.appointmentHeader}>
-                    <Title>{appointment.type} Appointment</Title>
-                    <Chip
-                      mode="outlined"
-                      style={{ backgroundColor: getStatusColor(appointment.status) }}
-                      textStyle={{ color: '#fff' }}
-                    >
-                      {appointment.status}
-                    </Chip>
-                  </View>
-                  <Text style={styles.dateText}>{formatDate(appointment.dateTime)}</Text>
-                  <Text style={styles.providerText}>
-                    Provider: Dr. {appointment.providerId?.userId?.fullName || 'Unknown'}
-                  </Text>
-                  {appointment.reason && (
-                    <Text style={styles.reasonText}>Reason: {appointment.reason}</Text>
-                  )}
+                  <Text style={styles.emptyText}>No appointments scheduled</Text>
+                  <Button
+                    mode="contained"
+                    style={styles.scheduleButton}
+                    onPress={() => router.push('/(patient)/schedule-appointment')}
+                  >
+                    Schedule New Appointment
+                  </Button>
                 </Card.Content>
               </Card>
-            ))
-          )}
+            ) : (
+              appointments.map((appointment) => (
+                <Card key={appointment._id} style={styles.card}>
+                  <Card.Content>
+                    <View style={styles.appointmentHeader}>
+                      <Title>{appointment.type} Appointment</Title>
+                      <Chip
+                        mode="outlined"
+                        style={{ backgroundColor: getStatusColor(appointment.status) }}
+                        textStyle={{ color: '#fff' }}
+                      >
+                        {appointment.status}
+                      </Chip>
+                    </View>
+                    <Text style={styles.dateText}>{formatDate(appointment.dateTime)}</Text>
+                    <Text style={styles.providerText}>
+                      Provider: Dr. {appointment.providerId?.userId?.fullName || 'Unknown'}
+                    </Text>
+                    {appointment.reason && (
+                      <Text style={styles.reasonText}>Reason: {appointment.reason}</Text>
+                    )}
+                  </Card.Content>
+                </Card>
+              ))
+            )}
+          </ScrollView>
 
-          <Button
-            mode="outlined"
-            onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
-            style={{ margin: 16 }}
-          >
-            Back to Home
-          </Button>
-        </ScrollView>
+          <FAB
+            style={styles.fab}
+            icon="plus"
+            onPress={() => router.push('/(patient)/schedule-appointment')}
+            label="New Appointment"
+          />
+
+          <View style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}>
+            <Button
+              mode="outlined"
+              onPress={() =>
+                router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')
+              }
+            >
+              Back to Home
+            </Button>
+          </View>
+        </>
       )}
-
-      <FAB
-        style={styles.fab}
-        icon="plus"
-        onPress={() => router.push('/(patient)/schedule-appointment')}
-        label="New Appointment"
-      />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

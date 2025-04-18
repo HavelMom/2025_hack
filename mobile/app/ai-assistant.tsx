@@ -111,7 +111,7 @@ export default function AIAssistant() {
       style={styles.container}
       keyboardVerticalOffset={80}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Title style={styles.title}>AI Health Assistant</Title>
         <Text style={styles.subtitle}>
           Describe your symptoms or ask for help with appointments
@@ -125,8 +125,7 @@ export default function AIAssistant() {
         contentContainerStyle={[
           styles.conversationContent,
           {
-            paddingTop: insets.top + 16,
-            paddingBottom: insets.bottom + 16,
+            paddingBottom: insets.bottom + 32,
           }
         ]}
       >
@@ -182,9 +181,17 @@ export default function AIAssistant() {
             <Text style={styles.processingText}>Processing...</Text>
           </View>
         )}
+
+        <Button
+          mode="outlined"
+          onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+          style={{ marginTop: 24, alignSelf: 'center' }}
+        >
+          Back to Home
+        </Button>
       </ScrollView>
 
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>
         <TextInput
           mode="outlined"
           value={input}
@@ -207,14 +214,6 @@ export default function AIAssistant() {
           style={styles.sendButton}
         />
       </View>
-
-      <Button
-        mode="outlined"
-        onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
-        style={{ margin: 8 }}
-      >
-        Back to Home
-      </Button>
     </KeyboardAvoidingView>
   );
 }
@@ -222,7 +221,11 @@ export default function AIAssistant() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: {
-    padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   title: { fontSize: 22, fontWeight: 'bold' },
   subtitle: { fontSize: 14, color: '#666', marginTop: 4 },
@@ -252,7 +255,12 @@ const styles = StyleSheet.create({
   processingContainer: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 12 },
   processingText: { fontSize: 14, color: '#666', marginLeft: 8 },
   inputContainer: {
-    flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e0e0e0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
   },
   textInput: { flex: 1, backgroundColor: '#fff' },
   sendButton: { marginLeft: 8 },
