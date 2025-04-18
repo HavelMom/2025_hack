@@ -17,9 +17,5 @@
     "url": "https://github.com/HavelMom/2025_hack/issues"
   },
   "homepage": "https://github.com/HavelMom/2025_hack#readme",
-  "description": "",
-  "workspaces" :[
-    "backend",
-    "mobile"
-  ]
+  "description": ""
 }
