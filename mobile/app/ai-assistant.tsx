@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { Text, Card, Button, Title, TextInput, ActivityIndicator, useTheme, IconButton }
-  from 'react-native-paper';
+import {
+  Text, Card, Button, Title, TextInput, ActivityIndicator, useTheme, IconButton
+} from 'react-native-paper';
 import { router } from 'expo-router';
 import axios from 'axios';
-
 import { API_URL } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,35 +12,30 @@ export default function AIAssistant() {
   const [input, setInput] = useState('');
   const [processing, setProcessing] = useState(false);
   const [conversation, setConversation] = useState([]);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const theme = useTheme();
-  const scrollViewRef = React.useRef();
+  const scrollViewRef = useRef();
 
   const processVoiceInput = async (text) => {
     if (!text.trim()) return;
-    
+
     try {
       setProcessing(true);
-      
-      // Add user message to conversation
       const userMessage = {
         id: Date.now().toString(),
         text,
         isUser: true,
         timestamp: new Date()
       };
-      
       setConversation(prev => [...prev, userMessage]);
       setInput('');
-      
-      // Call AI voice assistant API
+
       const response = await axios.post(
         `${API_URL}/ai/process-voice`,
         { inputText: text },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      // Add AI response to conversation
+
       const aiResponse = {
         id: (Date.now() + 1).toString(),
         text: response.data.response.text,
@@ -49,45 +44,40 @@ export default function AIAssistant() {
         actions: response.data.response.actions,
         timestamp: new Date()
       };
-      
+
       setConversation(prev => [...prev, aiResponse]);
-      
-      // Handle actions if needed
+
       if (aiResponse.actions.scheduleAppointment) {
-        // Could navigate to appointment scheduling
         Alert.alert(
           'Schedule Appointment',
           'Would you like to schedule an appointment now?',
           [
             { text: 'Not now', style: 'cancel' },
-            { 
-              text: 'Yes', 
+            {
+              text: 'Yes',
               onPress: () => router.push('/(patient)/schedule-appointment')
             }
           ]
         );
       }
-      
+
       if (aiResponse.actions.connectToProvider) {
-        // Could navigate to messaging
         Alert.alert(
           'Connect to Provider',
           'Would you like to message your healthcare provider?',
           [
             { text: 'Not now', style: 'cancel' },
-            { 
-              text: 'Yes', 
+            {
+              text: 'Yes',
               onPress: () => router.push('/(patient)/messages')
             }
           ]
         );
       }
-      
+
     } catch (error) {
       console.error('Error processing voice input:', error);
       Alert.alert('Error', 'Failed to process your request');
-      
-      // Add error message to conversation
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         text: "I'm sorry, I encountered an error processing your request. Please try again.",
@@ -95,14 +85,12 @@ export default function AIAssistant() {
         error: true,
         timestamp: new Date()
       };
-      
       setConversation(prev => [...prev, errorMessage]);
     } finally {
       setProcessing(false);
     }
   };
 
-  // Auto-scroll to bottom when conversation updates
   useEffect(() => {
     if (scrollViewRef.current) {
       setTimeout(() => {
@@ -127,7 +115,7 @@ export default function AIAssistant() {
           Describe your symptoms or ask for help with appointments
         </Text>
       </View>
-      
+
       <ScrollView
         ref={scrollViewRef}
         style={styles.conversationContainer}
@@ -140,22 +128,22 @@ export default function AIAssistant() {
             </Text>
             <Text style={styles.suggestionText}>You can ask me about:</Text>
             <View style={styles.suggestionsContainer}>
-              <Button 
-                mode="outlined" 
+              <Button
+                mode="outlined"
                 style={styles.suggestionButton}
                 onPress={() => processVoiceInput("I have a headache and fever")}
               >
                 Symptom analysis
               </Button>
-              <Button 
-                mode="outlined" 
+              <Button
+                mode="outlined"
                 style={styles.suggestionButton}
                 onPress={() => processVoiceInput("I need to schedule an appointment")}
               >
                 Schedule appointment
               </Button>
-              <Button 
-                mode="outlined" 
+              <Button
+                mode="outlined"
                 style={styles.suggestionButton}
                 onPress={() => processVoiceInput("Connect me with my doctor")}
               >
@@ -165,8 +153,8 @@ export default function AIAssistant() {
           </View>
         ) : (
           conversation.map(message => (
-            <View 
-              key={message.id} 
+            <View
+              key={message.id}
               style={[
                 styles.messageBubble,
                 message.isUser ? styles.userBubble : styles.aiBubble,
@@ -174,13 +162,11 @@ export default function AIAssistant() {
               ]}
             >
               <Text style={styles.messageText}>{message.text}</Text>
-              <Text style={styles.timestampText}>
-                {formatTime(message.timestamp)}
-              </Text>
+              <Text style={styles.timestampText}>{formatTime(message.timestamp)}</Text>
             </View>
           ))
         )}
-        
+
         {processing && (
           <View style={styles.processingContainer}>
             <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -188,7 +174,7 @@ export default function AIAssistant() {
           </View>
         )}
       </ScrollView>
-      
+
       <View style={styles.inputContainer}>
         <TextInput
           mode="outlined"
@@ -198,8 +184,8 @@ export default function AIAssistant() {
           style={styles.textInput}
           disabled={processing}
           right={
-            <TextInput.Icon 
-              icon="microphone" 
+            <TextInput.Icon
+              icon="microphone"
               onPress={() => Alert.alert('Voice Input', 'Voice input would be activated here')}
             />
           }
@@ -212,110 +198,53 @@ export default function AIAssistant() {
           style={styles.sendButton}
         />
       </View>
+
+      <Button
+        mode="outlined"
+        onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+        style={{ margin: 8 }}
+      >
+        Back to Home
+      </Button>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e0e0e0',
   },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  conversationContainer: {
-    flex: 1,
-  },
-  conversationContent: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  suggestionText: {
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  suggestionsContainer: {
-    width: '100%',
-  },
-  suggestionButton: {
-    marginBottom: 10,
-  },
+  title: { fontSize: 22, fontWeight: 'bold' },
+  subtitle: { fontSize: 14, color: '#666', marginTop: 4 },
+  conversationContainer: { flex: 1 },
+  conversationContent: { padding: 16, paddingBottom: 24 },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', padding: 20 },
+  emptyText: { fontSize: 16, textAlign: 'center', marginBottom: 20 },
+  suggestionText: { fontSize: 14, marginBottom: 10 },
+  suggestionsContainer: { width: '100%' },
+  suggestionButton: { marginBottom: 10 },
   messageBubble: {
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 12,
-    maxWidth: '80%',
-    elevation: 1,
+    padding: 12, borderRadius: 16, marginBottom: 12, maxWidth: '80%', elevation: 1,
   },
   userBubble: {
-    backgroundColor: '#e3f2fd',
-    alignSelf: 'flex-end',
-    borderBottomRightRadius: 4,
+    backgroundColor: '#e3f2fd', alignSelf: 'flex-end', borderBottomRightRadius: 4,
   },
   aiBubble: {
-    backgroundColor: '#fff',
-    alignSelf: 'flex-start',
-    borderBottomLeftRadius: 4,
+    backgroundColor: '#fff', alignSelf: 'flex-start', borderBottomLeftRadius: 4,
   },
   errorBubble: {
     backgroundColor: '#ffebee',
   },
-  messageText: {
-    fontSize: 16,
-  },
+  messageText: { fontSize: 16 },
   timestampText: {
-    fontSize: 10,
-    color: '#666',
-    alignSelf: 'flex-end',
-    marginTop: 4,
+    fontSize: 10, color: '#666', alignSelf: 'flex-end', marginTop: 4,
   },
-  processingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    marginBottom: 12,
-  },
-  processingText: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 8,
-  },
+  processingContainer: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 12 },
+  processingText: { fontSize: 14, color: '#666', marginLeft: 8 },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e0e0e0',
   },
-  textInput: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  sendButton: {
-    marginLeft: 8,
-  },
+  textInput: { flex: 1, backgroundColor: '#fff' },
+  sendButton: { marginLeft: 8 },
 });

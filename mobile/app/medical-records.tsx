@@ -10,7 +10,7 @@ export default function PatientMedicalRecords() {
   const [medicalRecords, setMedicalRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const theme = useTheme();
 
   const fetchMedicalRecords = async () => {
@@ -62,7 +62,7 @@ export default function PatientMedicalRecords() {
           }
         >
           <Title style={styles.title}>My Medical Records</Title>
-          
+
           {medicalRecords.length === 0 ? (
             <Card style={styles.emptyCard}>
               <Card.Content>
@@ -80,7 +80,7 @@ export default function PatientMedicalRecords() {
                   <Text style={styles.providerText}>
                     Provider: Dr. {record.providerId?.userId?.fullName || 'Unknown'}
                   </Text>
-                  
+
                   <List.Accordion
                     title="Symptoms"
                     left={props => <List.Icon {...props} icon="medical-bag" />}
@@ -90,7 +90,7 @@ export default function PatientMedicalRecords() {
                       titleNumberOfLines={10}
                     />
                   </List.Accordion>
-                  
+
                   <List.Accordion
                     title="Treatment"
                     left={props => <List.Icon {...props} icon="pill" />}
@@ -100,7 +100,7 @@ export default function PatientMedicalRecords() {
                       titleNumberOfLines={10}
                     />
                   </List.Accordion>
-                  
+
                   {record.notes && (
                     <List.Accordion
                       title="Notes"
@@ -121,6 +121,14 @@ export default function PatientMedicalRecords() {
               </Card>
             ))
           )}
+
+          <Button
+            mode="outlined"
+            onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+            style={{ margin: 16 }}
+          >
+            Back to Home
+          </Button>
         </ScrollView>
       )}
     </View>
@@ -128,47 +136,14 @@ export default function PatientMedicalRecords() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    margin: 16,
-  },
-  card: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    elevation: 2,
-  },
-  emptyCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 10,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  dateText: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  providerText: {
-    fontSize: 16,
-    marginBottom: 16,
-  },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 10 },
+  scrollView: { flex: 1 },
+  title: { fontSize: 22, fontWeight: 'bold', margin: 16 },
+  card: { marginHorizontal: 16, marginBottom: 16, elevation: 2 },
+  emptyCard: { marginHorizontal: 16, marginBottom: 16, padding: 10, alignItems: 'center' },
+  emptyText: { fontSize: 16, textAlign: 'center' },
+  dateText: { fontSize: 16, marginBottom: 8 },
+  providerText: { fontSize: 16, marginBottom: 16 },
 });

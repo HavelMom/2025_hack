@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
-import { Text, Card, Button, Title, ActivityIndicator, useTheme, Avatar, Divider } from 'react-native-paper';
+import { Text, Card, Button, Title, ActivityIndicator, useTheme, Avatar } from 'react-native-paper';
 import { router } from 'expo-router';
 import axios from 'axios';
 import { API_URL } from '../utils/api';
@@ -10,7 +10,7 @@ export default function PatientMessages() {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const theme = useTheme();
 
   const fetchConversations = async () => {
@@ -41,18 +41,15 @@ export default function PatientMessages() {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    
-    // If today, show time only
+
     if (date.toDateString() === now.toDateString()) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
-    
-    // If this year, show month and day
+
     if (date.getFullYear() === now.getFullYear()) {
       return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
     }
-    
-    // Otherwise show full date
+
     return date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
@@ -71,7 +68,7 @@ export default function PatientMessages() {
           }
         >
           <Title style={styles.title}>Messages</Title>
-          
+
           {conversations.length === 0 ? (
             <Card style={styles.emptyCard}>
               <Card.Content>
@@ -83,17 +80,21 @@ export default function PatientMessages() {
             </Card>
           ) : (
             conversations.map((conversation) => (
-              <Card 
-                key={conversation.user.id} 
+              <Card
+                key={conversation.user.id}
                 style={styles.card}
                 onPress={() => router.push(`/(patient)/conversation/${conversation.user.id}`)}
               >
                 <Card.Content>
                   <View style={styles.conversationHeader}>
                     <View style={styles.userInfo}>
-                      <Avatar.Text 
-                        size={50} 
-                        label={conversation.user.fullName.split(' ').map(n => n[0]).join('')} 
+                      <Avatar.Text
+                        size={50}
+                        label={conversation.user.fullName
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')
+                        }
                       />
                       <View style={styles.userTextContainer}>
                         <Title>{conversation.user.fullName}</Title>
@@ -119,11 +120,19 @@ export default function PatientMessages() {
               </Card>
             ))
           )}
+
+          <Button
+            mode="outlined"
+            onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+            style={{ marginHorizontal: 16, marginTop: 24 }}
+          >
+            Back to Home
+          </Button>
         </ScrollView>
       )}
-      
-      <Button 
-        mode="contained" 
+
+      <Button
+        mode="contained"
         style={styles.newMessageButton}
         icon="plus"
         onPress={() => router.push('/(patient)/new-message')}
@@ -135,87 +144,27 @@ export default function PatientMessages() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    margin: 16,
-  },
-  card: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    elevation: 2,
-  },
-  emptyCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 10,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptySubText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 10 },
+  scrollView: { flex: 1 },
+  title: { fontSize: 22, fontWeight: 'bold', margin: 16 },
+  card: { marginHorizontal: 16, marginBottom: 12, elevation: 2 },
+  emptyCard: { marginHorizontal: 16, marginBottom: 16, padding: 10, alignItems: 'center' },
+  emptyText: { fontSize: 16, textAlign: 'center', marginBottom: 8 },
+  emptySubText: { fontSize: 14, color: '#666', textAlign: 'center' },
   conversationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  userTextContainer: {
-    marginLeft: 15,
-    flex: 1,
-  },
-  previewText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  metaInfo: {
-    alignItems: 'flex-end',
-  },
-  timeText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 5,
-  },
+  userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  userTextContainer: { marginLeft: 15, flex: 1 },
+  previewText: { color: '#666', fontSize: 14 },
+  metaInfo: { alignItems: 'flex-end' },
+  timeText: { fontSize: 12, color: '#666', marginBottom: 5 },
   unreadBadge: {
-    backgroundColor: '#1976D2',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#1976D2', borderRadius: 12, width: 24, height: 24,
+    justifyContent: 'center', alignItems: 'center',
   },
-  unreadText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  newMessageButton: {
-    margin: 16,
-  },
+  unreadText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
+  newMessageButton: { margin: 16 },
 });

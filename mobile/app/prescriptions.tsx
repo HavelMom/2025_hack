@@ -10,7 +10,7 @@ export default function PatientPrescriptions() {
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const theme = useTheme();
 
   const fetchPrescriptions = async () => {
@@ -64,7 +64,6 @@ export default function PatientPrescriptions() {
 
   const requestRefill = async (prescriptionId) => {
     try {
-      // In a real app, this would call an API endpoint to request a refill
       Alert.alert('Refill Requested', 'Your refill request has been sent to your provider.');
     } catch (error) {
       console.error('Error requesting refill:', error);
@@ -87,7 +86,7 @@ export default function PatientPrescriptions() {
           }
         >
           <Title style={styles.title}>My Prescriptions</Title>
-          
+
           {prescriptions.length === 0 ? (
             <Card style={styles.emptyCard}>
               <Card.Content>
@@ -100,37 +99,37 @@ export default function PatientPrescriptions() {
                 <Card.Content>
                   <View style={styles.headerContainer}>
                     <Title>{prescription.medicationName}</Title>
-                    <Chip 
-                      mode="outlined" 
+                    <Chip
+                      mode="outlined"
                       style={{ backgroundColor: getStatusColor(prescription.status) }}
                       textStyle={{ color: '#fff' }}
                     >
                       {prescription.status}
                     </Chip>
                   </View>
-                  
+
                   <Text style={styles.dosageText}>
                     {prescription.dosage}, {prescription.frequency}
                   </Text>
-                  
+
                   <Text style={styles.dateText}>
                     Start: {formatDate(prescription.startDate)}
                   </Text>
-                  
+
                   <Text style={styles.dateText}>
                     End: {formatDate(prescription.endDate)}
                   </Text>
-                  
+
                   <Text style={styles.providerText}>
                     Prescribed by: Dr. {prescription.providerId?.userId?.fullName || 'Unknown'}
                   </Text>
-                  
+
                   {prescription.refills > 0 && (
                     <Text style={styles.refillsText}>
                       Refills remaining: {prescription.refills}
                     </Text>
                   )}
-                  
+
                   {prescription.notes && (
                     <Text style={styles.notesText}>
                       Notes: {prescription.notes}
@@ -139,7 +138,7 @@ export default function PatientPrescriptions() {
                 </Card.Content>
                 <Card.Actions>
                   {prescription.status === 'ACTIVE' && prescription.refills > 0 && (
-                    <Button 
+                    <Button
                       mode="contained"
                       onPress={() => requestRefill(prescription._id)}
                     >
@@ -150,6 +149,14 @@ export default function PatientPrescriptions() {
               </Card>
             ))
           )}
+
+          <Button
+            mode="outlined"
+            onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+            style={{ margin: 16 }}
+          >
+            Back to Home
+          </Button>
         </ScrollView>
       )}
     </View>
@@ -157,70 +164,18 @@ export default function PatientPrescriptions() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    margin: 16,
-  },
-  card: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    elevation: 2,
-  },
-  emptyCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 10,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  dosageText: {
-    fontSize: 18,
-    marginBottom: 10,
-    fontWeight: 'bold',
-  },
-  dateText: {
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  providerText: {
-    fontSize: 16,
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  refillsText: {
-    fontSize: 16,
-    marginTop: 10,
-    fontWeight: 'bold',
-  },
-  notesText: {
-    fontSize: 14,
-    marginTop: 10,
-    color: '#666',
-    fontStyle: 'italic',
-  },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 10 },
+  scrollView: { flex: 1 },
+  title: { fontSize: 22, fontWeight: 'bold', margin: 16 },
+  card: { marginHorizontal: 16, marginBottom: 16, elevation: 2 },
+  emptyCard: { marginHorizontal: 16, marginBottom: 16, padding: 10, alignItems: 'center' },
+  emptyText: { fontSize: 16, textAlign: 'center' },
+  headerContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  dosageText: { fontSize: 18, marginBottom: 10, fontWeight: 'bold' },
+  dateText: { fontSize: 16, marginBottom: 4 },
+  providerText: { fontSize: 16, marginTop: 10, marginBottom: 4 },
+  refillsText: { fontSize: 16, marginTop: 10, fontWeight: 'bold' },
+  notesText: { fontSize: 14, marginTop: 10, color: '#666', fontStyle: 'italic' },
 });

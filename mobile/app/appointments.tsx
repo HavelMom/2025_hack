@@ -10,7 +10,7 @@ export default function PatientAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const theme = useTheme();
 
   const fetchAppointments = async () => {
@@ -73,12 +73,9 @@ export default function PatientAppointments() {
       ) : (
         <ScrollView
           style={styles.scrollView}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <Title style={styles.title}>Upcoming Appointments</Title>
-          
           {appointments.length === 0 ? (
             <Card style={styles.emptyCard}>
               <Card.Content>
@@ -106,139 +103,55 @@ export default function PatientAppointments() {
                       {appointment.status}
                     </Chip>
                   </View>
-                  
-                  <Text style={styles.dateText}>
-                    {formatDate(appointment.dateTime)}
-                  </Text>
-                  
+                  <Text style={styles.dateText}>{formatDate(appointment.dateTime)}</Text>
                   <Text style={styles.providerText}>
                     Provider: Dr. {appointment.providerId?.userId?.fullName || 'Unknown'}
                   </Text>
-                  
                   {appointment.reason && (
-                    <Text style={styles.reasonText}>
-                      Reason: {appointment.reason}
-                    </Text>
+                    <Text style={styles.reasonText}>Reason: {appointment.reason}</Text>
                   )}
                 </Card.Content>
-                <Card.Actions>
-                  <Button onPress={() => router.push(`/(patient)/appointment-details/${appointment._id}`)}>
-                    View Details
-                  </Button>
-                  {appointment.status === 'SCHEDULED' && (
-                    <Button 
-                      mode="outlined" 
-                      textColor={theme.colors.error}
-                      onPress={() => {
-                        // Handle cancellation
-                        Alert.alert(
-                          'Cancel Appointment',
-                          'Are you sure you want to cancel this appointment?',
-                          [
-                            { text: 'No', style: 'cancel' },
-                            { 
-                              text: 'Yes', 
-                              style: 'destructive',
-                              onPress: async () => {
-                                try {
-                                  await axios.put(
-                                    `${API_URL}/appointments/${appointment._id}`,
-                                    { status: 'CANCELLED' },
-                                    { headers: { Authorization: `Bearer ${token}` } }
-                                  );
-                                  fetchAppointments();
-                                } catch (error) {
-                                  console.error('Error cancelling appointment:', error);
-                                  Alert.alert('Error', 'Failed to cancel appointment');
-                                }
-                              }
-                            }
-                          ]
-                        );
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  )}
-                </Card.Actions>
               </Card>
             ))
           )}
         </ScrollView>
       )}
-      
+
       <FAB
         style={styles.fab}
         icon="plus"
         onPress={() => router.push('/(patient)/schedule-appointment')}
         label="New Appointment"
       />
+
+      <Button
+        mode="outlined"
+        onPress={() => router.replace(user?.role === 'provider' ? '/(provider)/' : '/(patient)/')}
+        style={{ margin: 16 }}
+      >
+        Back to Home
+      </Button>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    margin: 16,
-  },
-  card: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    elevation: 2,
-  },
-  emptyCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 10,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  scheduleButton: {
-    marginTop: 10,
-  },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 10 },
+  scrollView: { flex: 1 },
+  title: { fontSize: 22, fontWeight: 'bold', margin: 16 },
+  card: { marginHorizontal: 16, marginBottom: 16, elevation: 2 },
+  emptyCard: { marginHorizontal: 16, marginBottom: 16, padding: 10, alignItems: 'center' },
+  emptyText: { fontSize: 16, marginBottom: 20, textAlign: 'center' },
+  scheduleButton: { marginTop: 10 },
   appointmentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10,
   },
-  dateText: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  providerText: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  reasonText: {
-    fontSize: 14,
-    color: '#666',
-  },
+  dateText: { fontSize: 16, marginBottom: 8 },
+  providerText: { fontSize: 16, marginBottom: 8 },
+  reasonText: { fontSize: 14, color: '#666' },
   fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
+    position: 'absolute', margin: 16, right: 0, bottom: 80,
   },
 });
